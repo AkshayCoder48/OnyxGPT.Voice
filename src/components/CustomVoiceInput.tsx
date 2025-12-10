@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { KeyRound, Plus, Check, X } from 'lucide-react';
+import { KeyRound, Plus, Check, X, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -9,6 +9,13 @@ interface CustomVoiceInputProps {
   onChange: (voiceId: string) => void;
   provider: string;
 }
+
+// Default ElevenLabs voices that work with Puter.js
+const DEFAULT_VOICE_IDS = [
+  '21m00Tcm4TlvDq8ikWAM', 'AZnzlk1XvdvUeBnXmlld', 'EXAVITQu4vr4xnSDxMaL', 
+  'ErXwobaYiN019PkySvjV', 'MF3mGyEYCl7XYWbV9V6O', 'TxGEqnHWrfWFTfGW9XjX', 
+  'VR6AewLTigWG4xSOukaG', 'pNInz6obpgDQGcFmaJgB', 'yoZ06aMxZJJ28mfd3POQ'
+];
 
 export function CustomVoiceInput({ value, onChange, provider }: CustomVoiceInputProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -28,6 +35,12 @@ export function CustomVoiceInput({ value, onChange, provider }: CustomVoiceInput
     setIsOpen(false);
     setCustomId('');
   };
+
+  const handleResetToDefault = () => {
+    onChange('21m00Tcm4TlvDq8ikWAM'); // Rachel - default voice
+  };
+
+  const isCustomVoice = value && !DEFAULT_VOICE_IDS.includes(value);
 
   return (
     <div className="mt-4">
@@ -90,23 +103,39 @@ export function CustomVoiceInput({ value, onChange, provider }: CustomVoiceInput
                 <X className="w-4 h-4" />
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Find voice IDs in your ElevenLabs dashboard or use cloned voices
-            </p>
+            <div className="flex items-start gap-2 p-2 rounded bg-warning/10 border border-warning/30">
+              <AlertTriangle className="w-4 h-4 text-warning mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-warning">
+                <strong>Note:</strong> Custom voices from your ElevenLabs account may not work as Puter.js uses its own API key. Only public/shared voices are guaranteed to work.
+              </p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
       
       {/* Show current custom voice if using one */}
-      {value && !['21m00Tcm4TlvDq8ikWAM', 'AZnzlk1XvdvUeBnXmlld', 'EXAVITQu4vr4xnSDxMaL', 'ErXwobaYiN019PkySvjV', 'MF3mGyEYCl7XYWbV9V6O', 'TxGEqnHWrfWFTfGW9XjX', 'VR6AewLTigWG4xSOukaG', 'pNInz6obpgDQGcFmaJgB', 'yoZ06aMxZJJ28mfd3POQ'].includes(value) && (
+      {isCustomVoice && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mt-3 px-3 py-2 rounded-lg bg-primary/10 border border-primary/30 flex items-center gap-2"
+          className="mt-3 px-3 py-2 rounded-lg bg-warning/10 border border-warning/30 space-y-2"
         >
-          <KeyRound className="w-4 h-4 text-primary" />
-          <span className="text-sm font-mono text-foreground truncate flex-1">{value}</span>
-          <span className="text-xs text-primary">Custom</span>
+          <div className="flex items-center gap-2">
+            <KeyRound className="w-4 h-4 text-warning" />
+            <span className="text-sm font-mono text-foreground truncate flex-1">{value}</span>
+            <span className="text-xs text-warning">Custom</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-muted-foreground">May not work with Puter.js</p>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleResetToDefault}
+              className="h-6 text-xs text-primary hover:text-primary"
+            >
+              Reset to default
+            </Button>
+          </div>
         </motion.div>
       )}
     </div>
