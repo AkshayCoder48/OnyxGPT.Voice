@@ -10,6 +10,13 @@ import { VoiceSelector } from '@/components/VoiceSelector';
 import { SettingsPanel } from '@/components/SettingsPanel';
 import { WaveformVisualizer } from '@/components/WaveformVisualizer';
 import { HistoryPanel, type HistoryItem } from '@/components/HistoryPanel';
+import { SampleTextPresets } from '@/components/SampleTextPresets';
+import { VoiceComparison } from '@/components/VoiceComparison';
+import { AudioProgress } from '@/components/AudioProgress';
+import { KeyboardShortcuts } from '@/components/KeyboardShortcuts';
+import { CharacterCount } from '@/components/CharacterCount';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import type { Provider } from '@/lib/tts-config';
 
 const MAX_CHARS = 3000;
@@ -26,6 +33,7 @@ export default function Index() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [currentPlayingId, setCurrentPlayingId] = useState<string | null>(null);
+  const [comparisonLoading, setComparisonLoading] = useState(false);
   
   // History
   const [history, setHistory] = useState<HistoryItem[]>([]);
@@ -70,6 +78,7 @@ export default function Index() {
   useEffect(() => {
     localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
   }, [history]);
+
 
   const handleProviderChange = (newProvider: Provider) => {
     setProvider(newProvider);
@@ -385,6 +394,29 @@ export default function Index() {
     });
   };
 
+  // Voice comparison handler
+  const handleVoiceCompare = async (voice: string, provider: 'openai' | 'elevenlabs') => {
+    if (!text.trim()) return;
+    
+    setComparisonLoading(true);
+    const options = buildTTSOptions(provider, voice);
+    
+    try {
+      await playAudio(text, options);
+    } finally {
+      setComparisonLoading(false);
+    }
+  };
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    onSpeak: () => !isLoading && text.trim() && handleSpeak(),
+    onStop: handleStop,
+    onDownload: handleDownload,
+    onToggleSettings: () => setShowSettings(prev => !prev),
+    onClearText: () => setText(''),
+  });
+
   const charCount = text.length;
   const charPercentage = (charCount / MAX_CHARS) * 100;
 
@@ -418,7 +450,10 @@ export default function Index() {
             </div>
             <h1 className="text-3xl font-bold text-gradient">OnyxGPT.Voice</h1>
           </div>
-          <div className="w-20" />
+          <div className="flex items-center gap-2">
+            <KeyboardShortcuts />
+            <ThemeToggle />
+          </div>
         </motion.header>
 
         <div className="grid lg:grid-cols-3 gap-8">
@@ -454,6 +489,9 @@ export default function Index() {
                     transition={{ type: 'spring', stiffness: 100 }}
                   />
                 </div>
+                
+                {/* Sample Text Presets */}
+                <SampleTextPresets onSelect={setText} />
               </div>
             </div>
 
@@ -470,6 +508,9 @@ export default function Index() {
             {/* Waveform & Controls */}
             <div className="gradient-border rounded-2xl p-6 bg-card">
               <WaveformVisualizer isPlaying={isPlaying} isLoading={isLoading} />
+              
+              {/* Audio Progress */}
+              <AudioProgress audio={audioRef.current} isPlaying={isPlaying} />
               
               <div className="flex items-center justify-center gap-4 mt-6">
                 <AnimatePresence mode="wait">
@@ -628,6 +669,13 @@ export default function Index() {
                 </div>
               </div>
             </div>
+
+            {/* Voice Comparison */}
+            <VoiceComparison 
+              text={text} 
+              onCompare={handleVoiceCompare}
+              isLoading={comparisonLoading}
+            />
           </motion.div>
         </div>
       </div>
