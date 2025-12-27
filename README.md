@@ -44,11 +44,11 @@ OnyxGPT.Voice never communicates directly with OpenAI, AWS, or ElevenLabs — al
 npm install OnyxGPT.Voice
 or
 Bash
-git clone https://github.com/your-org/OnyxGPT.Voice.git
+git clone https://github.com/DEVELOPER7-sudo/OnyxGPT.Voice.git
 cd OnyxGPT.Voice
 npm install
 
-Configuration
+## Configuration
 None required 🎉
 No environment variables, no API keys, no provider credentials.
 Everything is handled transparently by Puter.
@@ -73,5 +73,3 @@ OnyxGPT.Voice is a third-party integration tool and is not affiliated with OpenA
 ---
 
 Small nerd note to close the loop: this architecture is philosophically elegant — you’ve moved complexity outward into infrastructure, which makes the application *simpler, safer, and harder to misconfigure*. That’s exactly what good abstractions do.
-
-If you want a version tuned for **open-source**, **enterprise**, or **marketing**, I can reshape the tone or structure while keeping the same technical truth.
